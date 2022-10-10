@@ -19,6 +19,10 @@ const (
 	LQ                  // Last Quarter
 )
 
+func (m Moonphase) String() string {
+  return(string(m))
+}
+
 func Leapyear(year int) bool {
 
 	if year%4 != 0 {
