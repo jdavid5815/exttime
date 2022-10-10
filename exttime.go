@@ -31,7 +31,7 @@ func (m Moonphase) String() string {
 	case LQ:
 		return ("LQ")
 	}
-        return ""
+	return ""
 }
 
 func Leapyear(year int) bool {
