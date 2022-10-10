@@ -20,7 +20,17 @@ const (
 )
 
 func (m Moonphase) String() string {
-  return(string(m))
+
+	switch m {
+	case NM:
+		return ("NM")
+	case FQ:
+		return ("FQ")
+	case FM:
+		return ("FM")
+	case LQ:
+		return ("LQ")
+	}
 }
 
 func Leapyear(year int) bool {
