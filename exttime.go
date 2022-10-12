@@ -43,29 +43,29 @@ func (m Moonphase) String() string {
 func MonthToInteger(month string) int {
 
 	switch strings.ToLower(month) {
-	case "jan" || "january":
+	case "jan", "january":
 		return 1
-	case "feb" || "february":
+	case "feb", "february":
 		return 2
-	case "mar" || "march":
+	case "mar", "march":
 		return 3
-	case "apr" || "april":
+	case "apr", "april":
 		return 4
-	case "may":
+	case "may",
 		return 5
-	case "jun" || "june":
+	case "jun", "june":
 		return 6
-	case "jul" || "july":
+	case "jul", "july":
 		return 7
-	case "aug" || "august":
+	case "aug", "august":
 		return 8
-	case "sep" || "september":
+	case "sep", "september":
 		return 9
-	case "oct" || "october":
+	case "oct", "october":
 		return 10
-	case "nov" || "november":
+	case "nov", "november":
 		return 11
-	case "dec" || "december":
+	case "dec", "december":
 		return 12
 	}
 	return 0
