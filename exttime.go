@@ -1,9 +1,11 @@
 package exttime
 
 type Date struct {
-	Year  int
-	Month int
-	Day   int
+	Year    int
+	Month   int
+	Day     int
+	Hour    int
+	Minutes int
 }
 type Moonphase uint8
 type DateMoonphaseCombo struct {
@@ -98,7 +100,7 @@ func Moonphases(new_moon_ref Date, year int) []DateMoonphaseCombo {
 		new_moons_since_reference float32
 		gregorian                 Date
 		combo                     DateMoonphaseCombo
-		results                   []DateMoonphaseCombo
+		phases                    []DateMoonphaseCombo
 		days_in_month             int
 		last_nm_day               int
 		last_fq_day               int
@@ -108,6 +110,8 @@ func Moonphases(new_moon_ref Date, year int) []DateMoonphaseCombo {
 	// Get our reference date in Julian Day Number format.
 	julian_reference_date = JulianDayNumber(new_moon_ref)
 	gregorian.Year = year
+	gregorian.Hour = 12
+	gregorian.Minutes = 00
 	last_nm_day = -1
 	last_fq_day = -1
 	last_fm_day = -1
@@ -135,7 +139,7 @@ func Moonphases(new_moon_ref Date, year int) []DateMoonphaseCombo {
 				if gregorian.Day-last_nm_day > 1 {
 					combo.Date = gregorian
 					combo.Phase = NM
-					results = append(results, combo)
+					phases = append(phases, combo)
 					if gregorian.Day == days_in_month {
 						last_nm_day = 0
 					} else {
@@ -146,7 +150,7 @@ func Moonphases(new_moon_ref Date, year int) []DateMoonphaseCombo {
 				if gregorian.Day-last_fq_day > 1 {
 					combo.Date = gregorian
 					combo.Phase = FQ
-					results = append(results, combo)
+					phases = append(phases, combo)
 					if gregorian.Day == days_in_month {
 						last_fq_day = 0
 					} else {
@@ -156,7 +160,7 @@ func Moonphases(new_moon_ref Date, year int) []DateMoonphaseCombo {
 			case moon_days > 14.77 && moon_days < 15.77:
 				combo.Date = gregorian
 				combo.Phase = FM
-				results = append(results, combo)
+				phases = append(phases, combo)
 				if gregorian.Day == days_in_month {
 					last_fm_day = 0
 				} else {
@@ -165,7 +169,7 @@ func Moonphases(new_moon_ref Date, year int) []DateMoonphaseCombo {
 			case moon_days > 22.14 && moon_days < 23.14:
 				combo.Date = gregorian
 				combo.Phase = LQ
-				results = append(results, combo)
+				phases = append(phases, combo)
 				if gregorian.Day == days_in_month {
 					last_lq_day = 0
 				} else {
@@ -188,5 +192,5 @@ func Moonphases(new_moon_ref Date, year int) []DateMoonphaseCombo {
 			}
 		}
 	}
-	return results
+	return phases
 }
