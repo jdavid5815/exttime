@@ -51,7 +51,7 @@ func MonthToInteger(month string) int {
 		return 3
 	case "apr", "april":
 		return 4
-	case "may",
+	case "may":
 		return 5
 	case "jun", "june":
 		return 6
