@@ -23,6 +23,10 @@ The constant *Synodic_Month* (also known as lunation) is the average period of t
 
 These are constants of Moonphase type.
 
+## *func MonthToInteger (month string) int*
+
+Returns the integer representation of a month in English or of its abbreviation. E.g. January, Feb, March, Arp, etc.. If the month cannot be converted, zero is returned.
+
 ## *func JulianDayNumber(gregorian Date) float32*
 
 Calculate the Julian Day Number, when the Gregorian date is given. The function is only valid for the year 1582 and later. If an earlier year is given, 0.0 will be returned. The result is the Julian Day Number for the beginning of the date in question at 0 hours, UTC. Note that this always gives you a half day extra. That is because the Julian Day begins at noon, UTC. This is convenient for astronomers (who until recently only observed at night), but it is confusing. The *date* type is a struct containing the integers year, month and day.

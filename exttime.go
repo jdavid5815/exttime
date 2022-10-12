@@ -1,5 +1,9 @@
 package exttime
 
+import (
+	"strings"
+)
+
 type Date struct {
 	Year    int
 	Month   int
@@ -34,6 +38,37 @@ func (m Moonphase) String() string {
 		return ("LQ")
 	}
 	return ""
+}
+
+func MonthToInteger(month string) int {
+
+	switch strings.ToLower(month) {
+	case "jan" || "january":
+		return 1
+	case "feb" || "february":
+		return 2
+	case "mar" || "march":
+		return 3
+	case "apr" || "april":
+		return 4
+	case "may":
+		return 5
+	case "jun" || "june":
+		return 6
+	case "jul" || "july":
+		return 7
+	case "aug" || "august":
+		return 8
+	case "sep" || "september":
+		return 9
+	case "oct" || "october":
+		return 10
+	case "nov" || "november":
+		return 11
+	case "dec" || "december":
+		return 12
+	}
+	return 0
 }
 
 func Leapyear(year int) bool {
