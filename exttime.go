@@ -2,43 +2,8 @@ package exttime
 
 import (
 	"strings"
+	"time"
 )
-
-type Date struct {
-	Year    int
-	Month   int
-	Day     int
-	Hour    int
-	Minutes int
-}
-type Moonphase uint8
-type DateMoonphaseCombo struct {
-	Date  Date
-	Phase Moonphase
-}
-
-const Synodic_Month = 29.5305888531
-const (
-	NM Moonphase = iota // New Moon
-	FQ                  // First Quarter
-	FM                  // FUll Moon
-	LQ                  // Last Quarter
-)
-
-func (m Moonphase) String() string {
-
-	switch m {
-	case NM:
-		return ("NM")
-	case FQ:
-		return ("FQ")
-	case FM:
-		return ("FM")
-	case LQ:
-		return ("LQ")
-	}
-	return ""
-}
 
 func MonthToInteger(month string) int {
 
@@ -116,116 +81,93 @@ func JulianDayNumber(gregorian Date) float32 {
 	return float32(c+gregorian.Day+e+f) - 1524.5
 }
 
-/*
- * Given a reference date of a well known New Moon, the function will calculate
- * the dates of all the new moon, full moon, first quater and last quarter dates
- * for the given year. The result is returned in a slice. Note that some results
- * might be off by a day. This is due the fact that we don't take the exact time
- * into consideration. Also, Gregorian days start at mightnight, Julian days at
- * noon. So consider this routine to give you *ballpark* dates. The results can
- * be tweaked by choosing a different reference date (where the New Moon is
- * earlier or later, depending on your situation.)
- */
-func Moonphases(new_moon_ref Date, year int) []DateMoonphaseCombo {
+func StartOfEuropeanDST(year int) Date {
 
-	var (
-		julian_reference_date     float32
-		julian_target_date        float32
-		days_since_new_moon       float32
-		new_moons_since_reference float32
-		gregorian                 Date
-		combo                     DateMoonphaseCombo
-		phases                    []DateMoonphaseCombo
-		days_in_month             int
-		last_nm_day               int
-		last_fq_day               int
-		last_fm_day               int
-		last_lq_day               int
-	)
-	// Get our reference date in Julian Day Number format.
-	julian_reference_date = JulianDayNumber(new_moon_ref)
-	gregorian.Year = year
-	gregorian.Hour = 12
-	gregorian.Minutes = 00
-	last_nm_day = -1
-	last_fq_day = -1
-	last_fm_day = -1
-	last_lq_day = -1
-	for gregorian.Month = 1; gregorian.Month <= 12; gregorian.Month++ {
-		switch gregorian.Month {
-		case 1, 3, 5, 7, 8, 10, 12:
-			days_in_month = 31
-		case 4, 6, 9, 11:
-			days_in_month = 30
-		case 2:
-			if Leapyear(year) {
-				days_in_month = 29
-			} else {
-				days_in_month = 28
+	var startofdst Date
+
+	/* In the EU, DST starts the last Sunday of March at 1:00 AM UTC.
+	 * So basically, we know all the required variables, except for
+	 * the day. Start by looking at the 25th of March, which is
+	 * exactly one week before the end of March, so there must be
+	 * one and exactly one Sunday in that last week.
+	 */
+	startofdst.Year = year
+	startofdst.Month = 3
+	startofdst.Day = 25
+	startofdst.Hour = 1
+	startofdst.Minutes = 0
+	t := time.Date(year, time.March, 25, 0, 0, 0, 0, time.UTC)
+	switch t.Weekday() {
+	case time.Monday:
+		startofdst.Day += 6
+	case time.Tuesday:
+		startofdst.Day += 5
+	case time.Wednesday:
+		startofdst.Day += 4
+	case time.Thursday:
+		startofdst.Day += 3
+	case time.Friday:
+		startofdst.Day += 2
+	case time.Saturday:
+		startofdst.Day++
+	}
+	return startofdst
+}
+
+func EndOfEuropeanDST(year int) Date {
+
+	var endofdst Date
+
+	/* In the EU, DST ends the last Sunday of October at 1:00 AM UTC.
+	 * So basically, we know all the required variables, except for
+	 * the day. Start by looking at the 25th of October, which is
+	 * exactly one week before the end of October, so there must be
+	 * one and exactly one Sunday in that last week.
+	 */
+	endofdst.Year = year
+	endofdst.Month = 10
+	endofdst.Day = 25
+	endofdst.Hour = 1
+	endofdst.Minutes = 0
+	t := time.Date(year, time.October, 25, 0, 0, 0, 0, time.UTC)
+	switch t.Weekday() {
+	case time.Monday:
+		endofdst.Day += 6
+	case time.Tuesday:
+		endofdst.Day += 5
+	case time.Wednesday:
+		endofdst.Day += 4
+	case time.Thursday:
+		endofdst.Day += 3
+	case time.Friday:
+		endofdst.Day += 2
+	case time.Saturday:
+		endofdst.Day++
+	}
+	return endofdst
+}
+
+func EuropeanSummerTime(today Date) bool {
+
+	var start, stop Date
+
+	start = StartOfEuropeanDST(today.Year)
+	stop = EndOfEuropeanDST(today.Year)
+	if today.Month >= start.Month && today.Month <= stop.Month {
+		switch today.Month {
+		case start.Month:
+			if today.Day >= start.Day {
+				return today.Hour >= start.Hour
 			}
-		}
-		for gregorian.Day = 1; gregorian.Day <= days_in_month; gregorian.Day++ {
-			julian_target_date = JulianDayNumber(gregorian)
-			days_since_new_moon = julian_target_date - julian_reference_date
-			new_moons_since_reference = days_since_new_moon / Synodic_Month
-			new_moons_fraction := new_moons_since_reference - float32(int(new_moons_since_reference))
-			switch moon_days := new_moons_fraction * Synodic_Month; {
-			case moon_days < 1 || moon_days > 29:
-				if gregorian.Day-last_nm_day > 1 {
-					combo.Date = gregorian
-					combo.Phase = NM
-					phases = append(phases, combo)
-					if gregorian.Day == days_in_month {
-						last_nm_day = 0
-					} else {
-						last_nm_day = gregorian.Day
-					}
-				}
-			case moon_days > 7.38 && moon_days < 8.38:
-				if gregorian.Day-last_fq_day > 1 {
-					combo.Date = gregorian
-					combo.Phase = FQ
-					phases = append(phases, combo)
-					if gregorian.Day == days_in_month {
-						last_fq_day = 0
-					} else {
-						last_fq_day = gregorian.Day
-					}
-				}
-			case moon_days > 14.77 && moon_days < 15.77:
-				combo.Date = gregorian
-				combo.Phase = FM
-				phases = append(phases, combo)
-				if gregorian.Day == days_in_month {
-					last_fm_day = 0
-				} else {
-					last_fm_day = gregorian.Day
-				}
-			case moon_days > 22.14 && moon_days < 23.14:
-				combo.Date = gregorian
-				combo.Phase = LQ
-				phases = append(phases, combo)
-				if gregorian.Day == days_in_month {
-					last_lq_day = 0
-				} else {
-					last_lq_day = gregorian.Day
-				}
+			return false
+		case stop.Month:
+			if today.Day <= stop.Day {
+				return today.Hour <= stop.Hour
 			}
-			if gregorian.Day == days_in_month {
-				if last_nm_day != 0 {
-					last_nm_day = -1
-				}
-				if last_fq_day != 0 {
-					last_fq_day = -1
-				}
-				if last_fm_day != 0 {
-					last_fm_day = -1
-				}
-				if last_lq_day != 0 {
-					last_lq_day = -1
-				}
-			}
+			return false
+		default:
+			return true
 		}
 	}
-	return phases
+	return false
 }
