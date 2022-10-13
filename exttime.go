@@ -1,6 +1,7 @@
 package exttime
 
 import (
+	"fmt"
 	"strings"
 	"time"
 )
@@ -161,6 +162,7 @@ func EuropeanSummerTime(today Date) bool {
 			}
 			return false
 		case stop.Month:
+			fmt.Printf("Peekaboo!\n")
 			if today.Day <= stop.Day {
 				return today.Hour <= stop.Hour
 			}
